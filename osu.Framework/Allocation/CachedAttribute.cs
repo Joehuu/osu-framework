@@ -32,7 +32,7 @@ namespace osu.Framework.Allocation
         ///
         /// Then the cached type will be "DerivedType".
         /// </example>
-        public Type Type;
+        private Type type;
 
         /// <summary>
         /// The name to identify this member with.
@@ -40,7 +40,7 @@ namespace osu.Framework.Allocation
         /// <remarks>
         /// If the member is cached with a custom <see cref="CacheInfo"/> that provides a parent, the name is automatically inferred from the field/property.
         /// </remarks>
-        public string Name;
+        private string name;
 
         /// <summary>
         /// Identifies a member to be cached to a <see cref="DependencyContainer"/>.
@@ -56,8 +56,8 @@ namespace osu.Framework.Allocation
         /// <param name="name">The name to identify the member as in the cache.</param>
         public CachedAttribute(Type type = null, string name = null)
         {
-            Type = type;
-            Name = name;
+            this.type = type;
+            this.name = name;
         }
 
         internal static CacheDependencyDelegate CreateActivator(Type type)
@@ -70,11 +70,11 @@ namespace osu.Framework.Allocation
             foreach (var iface in type.GetInterfaces())
             {
                 foreach (var attribute in iface.GetCustomAttributes<CachedAttribute>())
-                    additionActivators.Add((target, dc, info) => dc.CacheAs(attribute.Type ?? iface, new CacheInfo(info.Name ?? attribute.Name, info.Parent), target, allowValueTypes));
+                    additionActivators.Add((target, dc, info) => dc.CacheAs(attribute.type ?? iface, new CacheInfo(info.Name ?? attribute.name, info.Parent), target, allowValueTypes));
             }
 
             foreach (var attribute in type.GetCustomAttributes<CachedAttribute>())
-                additionActivators.Add((target, dc, info) => dc.CacheAs(attribute.Type ?? type, new CacheInfo(info.Name ?? attribute.Name, info.Parent), target, allowValueTypes));
+                additionActivators.Add((target, dc, info) => dc.CacheAs(attribute.type ?? type, new CacheInfo(info.Name ?? attribute.name, info.Parent), target, allowValueTypes));
 
             foreach (var property in type.GetProperties(ACTIVATOR_FLAGS).Where(f => f.GetCustomAttributes<CachedAttribute>().Any()))
                 additionActivators.AddRange(createMemberActivator(property, type, allowValueTypes));
@@ -153,7 +153,7 @@ namespace osu.Framework.Allocation
                         throw new NullDependencyException($"Attempted to cache a null value: {type.ReadableName()}.{member.Name}.");
                     }
 
-                    var cacheInfo = new CacheInfo(info.Name ?? attribute.Name);
+                    var cacheInfo = new CacheInfo(info.Name ?? attribute.name);
 
                     if (info.Parent != null)
                     {
@@ -161,7 +161,7 @@ namespace osu.Framework.Allocation
                         cacheInfo = new CacheInfo(cacheInfo.Name ?? member.Name, info.Parent);
                     }
 
-                    dc.CacheAs(attribute.Type ?? value.GetType(), cacheInfo, value, allowValueTypes);
+                    dc.CacheAs(attribute.type ?? value.GetType(), cacheInfo, value, allowValueTypes);
                 };
             }
         }

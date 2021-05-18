@@ -32,7 +32,7 @@ namespace osu.Framework.Allocation
         /// <remarks>
         /// This is only set if the member was cached with a custom <see cref="CacheInfo"/>.
         /// </remarks>
-        public Type Parent;
+        private Type parent;
 
         /// <summary>
         /// The name of the cached member in the <see cref="DependencyContainer"/>.
@@ -40,12 +40,12 @@ namespace osu.Framework.Allocation
         /// <remarks>
         /// This is only set if the member was cached with a custom <see cref="CacheInfo"/>.
         /// </remarks>
-        public string Name;
+        private string name;
 
         /// <summary>
         /// Whether a null value can be accepted if the member doesn't exist in the cache.
         /// </summary>
-        public bool CanBeNull;
+        private bool canBeNull;
 
         /// <summary>
         /// Identifies a member to be resolved from a <see cref="DependencyContainer"/>.
@@ -64,9 +64,9 @@ namespace osu.Framework.Allocation
         /// <param name="canBeNull">Whether a null value can be accepted if the member doesn't exist in the cache.</param>
         public ResolvedAttribute(Type parent = null, string name = null, bool canBeNull = false)
         {
-            Parent = parent;
-            Name = name;
-            CanBeNull = canBeNull;
+            this.parent = parent;
+            this.name = name;
+            this.canBeNull = canBeNull;
         }
 
         internal static InjectDependencyDelegate CreateActivator(Type type)
@@ -87,15 +87,15 @@ namespace osu.Framework.Allocation
                 var attribute = property.GetCustomAttribute<ResolvedAttribute>();
                 Debug.Assert(attribute != null);
 
-                var cacheInfo = new CacheInfo(attribute.Name);
+                var cacheInfo = new CacheInfo(attribute.name);
 
-                if (attribute.Parent != null)
+                if (attribute.parent != null)
                 {
                     // When a parent type exists, infer the property name if one is not provided
-                    cacheInfo = new CacheInfo(cacheInfo.Name ?? property.Name, attribute.Parent);
+                    cacheInfo = new CacheInfo(cacheInfo.Name ?? property.Name, attribute.parent);
                 }
 
-                var fieldGetter = getDependency(property.PropertyType, type, attribute.CanBeNull || property.PropertyType.IsNullable(), cacheInfo);
+                var fieldGetter = getDependency(property.PropertyType, type, attribute.canBeNull || property.PropertyType.IsNullable(), cacheInfo);
 
                 activators.Add((target, dc) => property.SetValue(target, fieldGetter(dc)));
             }
