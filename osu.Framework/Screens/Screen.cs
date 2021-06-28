@@ -36,7 +36,7 @@ namespace osu.Framework.Screens
         {
         }
 
-        public virtual bool OnExiting(IScreen next) => false;
+        public virtual bool OnExiting(IScreen next, IScreen destination) => false;
 
         public virtual void OnResuming(IScreen last)
         {

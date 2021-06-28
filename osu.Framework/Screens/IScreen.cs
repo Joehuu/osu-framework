@@ -28,8 +28,9 @@ namespace osu.Framework.Screens
         /// Invoked when this <see cref="IScreen"/> is exiting to a parent <see cref="IScreen"/>.
         /// </summary>
         /// <param name="next">The <see cref="IScreen"/> that will be resumed next.</param>
+        /// <param name="destination">The final <see cref="IScreen"/> of an exit operation.</param>
         /// <returns>True to cancel the exit process.</returns>
-        bool OnExiting(IScreen next);
+        bool OnExiting(IScreen next, IScreen destination);
 
         /// <summary>
         /// Invoked when this <see cref="IScreen"/> is entered from a child <see cref="IScreen"/>.

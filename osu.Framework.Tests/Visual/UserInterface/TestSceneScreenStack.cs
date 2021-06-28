@@ -462,25 +462,33 @@ namespace osu.Framework.Tests.Visual.UserInterface
             TestScreen screen1 = null;
             TestScreen screen2 = null;
             TestScreen screen3 = null;
+            TestScreen screen4 = null;
 
             pushAndEnsureCurrent(() => screen1 = new TestScreen());
             pushAndEnsureCurrent(() => screen2 = new TestScreen(), () => screen1);
             pushAndEnsureCurrent(() => screen3 = new TestScreen(), () => screen2);
+            pushAndEnsureCurrent(() => screen4 = new TestScreen(), () => screen3);
 
-            AddStep("block exit", () => screen3.Exiting = () => true);
+            AddStep("block exit", () => screen4.Exiting = () => true);
             AddStep("make screen 1 current", () => screen1.MakeCurrent());
-            AddAssert("screen 3 still current", () => screen3.IsCurrentScreen());
-            AddAssert("screen 3 exited fired", () => screen3.ExitedTo == screen2);
-            AddAssert("screen 2 resumed not fired", () => screen2.ResumedFrom == null);
-            AddAssert("screen 3 doesn't have lifetime end", () => screen3.LifetimeEnd == double.MaxValue);
+            AddAssert("screen 4 still current", () => screen4.IsCurrentScreen());
+            AddAssert("screen 4 exited fired", () => screen4.ExitedTo == screen3);
+            AddAssert("screen 4 destination is screen 1", () => screen4.DestinationIs == screen1);
+            AddAssert("screen 3 resumed not fired", () => screen3.ResumedFrom == null);
+            AddAssert("screen 4 doesn't have lifetime end", () => screen4.LifetimeEnd == double.MaxValue);
+            AddAssert("screen 3 valid for resume", () => screen3.ValidForResume);
             AddAssert("screen 2 valid for resume", () => screen2.ValidForResume);
             AddAssert("screen 1 valid for resume", () => screen1.ValidForResume);
 
-            AddStep("don't block exit", () => screen3.Exiting = () => false);
+            AddStep("don't block exit", () => screen4.Exiting = () => false);
             AddStep("make screen 1 current", () => screen1.MakeCurrent());
             AddAssert("screen 1 current", () => screen1.IsCurrentScreen());
+            AddAssert("screen 4 exited fired", () => screen4.ExitedTo == screen3);
+            AddAssert("screen 4 destination is screen 1", () => screen4.DestinationIs == screen1);
             AddAssert("screen 3 exited fired", () => screen3.ExitedTo == screen2);
+            AddAssert("screen 3 destination is screen 1", () => screen3.DestinationIs == screen1);
             AddAssert("screen 2 exited fired", () => screen2.ExitedTo == screen1);
+            AddAssert("screen 2 destination is screen 1", () => screen2.DestinationIs == screen1);
             AddAssert("screen 1 resumed fired", () => screen1.ResumedFrom == screen2);
             AddAssert("screen 1 doesn't have lifetime end", () => screen1.LifetimeEnd == double.MaxValue);
             AddAssert("screen 3 has lifetime end", () => screen3.LifetimeEnd != double.MaxValue);
@@ -929,6 +937,7 @@ namespace osu.Framework.Tests.Visual.UserInterface
 
             public IScreen EnteredFrom;
             public IScreen ExitedTo;
+            public IScreen DestinationIs;
 
             public IScreen SuspendedTo;
             public IScreen ResumedFrom;
@@ -1058,16 +1067,17 @@ namespace osu.Framework.Tests.Visual.UserInterface
                 this.FadeIn(1000);
             }
 
-            public override bool OnExiting(IScreen next)
+            public override bool OnExiting(IScreen next, IScreen destination)
             {
                 ExitedTo = next;
+                DestinationIs = destination;
                 Exited?.Invoke();
 
                 if (Exiting?.Invoke() == true)
                     return true;
 
                 this.MoveTo(new Vector2(0, -DrawSize.Y), transition_time, Easing.OutQuint);
-                return base.OnExiting(next);
+                return base.OnExiting(next, destination);
             }
 
             public override void OnSuspending(IScreen next)
