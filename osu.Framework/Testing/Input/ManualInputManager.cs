@@ -3,6 +3,8 @@
 
 using System.Linq;
 using System;
+using System.Collections.Generic;
+using osu.Framework.Allocation;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Input;
@@ -17,6 +19,9 @@ namespace osu.Framework.Testing.Input
 {
     public partial class ManualInputManager : PassThroughInputManager
     {
+        [Cached(typeof(TextInputSource))]
+        public readonly ManualTextInput TextInput = new ManualTextInput();
+
         private readonly ManualInputHandler handler;
 
         protected override Container<Drawable> Content => content;
@@ -192,6 +197,51 @@ namespace osu.Framework.Testing.Input
             public void EnqueueInput(IInput input)
             {
                 PendingInputs.Enqueue(input);
+            }
+        }
+
+        public class ManualTextInput : TextInputSource
+        {
+            public void Text(string text) => TriggerTextInput(text);
+
+            public new void TriggerImeComposition(string text, int start, int length)
+            {
+                base.TriggerImeComposition(text, start, length);
+            }
+
+            public new void TriggerImeResult(string text)
+            {
+                base.TriggerImeResult(text);
+            }
+
+            public override void ResetIme()
+            {
+                base.ResetIme();
+
+                // this call will be somewhat delayed in a real world scenario, but let's run it immediately for simplicity.
+                base.TriggerImeComposition(string.Empty, 0, 0);
+            }
+
+            public readonly Queue<bool> ActivationQueue = new Queue<bool>();
+            public readonly Queue<bool> EnsureActivatedQueue = new Queue<bool>();
+            public readonly Queue<bool> DeactivationQueue = new Queue<bool>();
+
+            protected override void ActivateTextInput(bool allowIme)
+            {
+                base.ActivateTextInput(allowIme);
+                ActivationQueue.Enqueue(allowIme);
+            }
+
+            protected override void EnsureTextInputActivated(bool allowIme)
+            {
+                base.EnsureTextInputActivated(allowIme);
+                EnsureActivatedQueue.Enqueue(allowIme);
+            }
+
+            protected override void DeactivateTextInput()
+            {
+                base.DeactivateTextInput();
+                DeactivationQueue.Enqueue(true);
             }
         }
     }

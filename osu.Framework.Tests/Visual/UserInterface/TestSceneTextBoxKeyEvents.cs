@@ -20,8 +20,6 @@ namespace osu.Framework.Tests.Visual.UserInterface
     {
         private KeyEventQueuesTextBox textBox;
 
-        private TestSceneTextBoxEvents.ManualTextInput textInput;
-
         [Resolved]
         private GameHost host { get; set; }
 
@@ -30,15 +28,7 @@ namespace osu.Framework.Tests.Visual.UserInterface
         [SetUpSteps]
         public void SetUpSteps()
         {
-            TestSceneTextBoxEvents.ManualTextInputContainer textInputContainer = null;
-
-            AddStep("add manual text input container", () =>
-            {
-                Child = textInputContainer = new TestSceneTextBoxEvents.ManualTextInputContainer();
-                textInput = textInputContainer.TextInput;
-            });
-
-            AddStep("add textbox", () => textInputContainer.Child = textBox = new KeyEventQueuesTextBox
+            AddStep("add textbox", () => Child = textBox = new KeyEventQueuesTextBox
             {
                 CommitOnFocusLost = true,
                 ReleaseFocusOnCommit = false,
@@ -60,7 +50,7 @@ namespace osu.Framework.Tests.Visual.UserInterface
         [Test]
         public void TestTextInputWithoutKeyPress()
         {
-            AddStep("insert text", () => textInput.Text("W"));
+            AddStep("insert text", () => InputManager.TextInput.Text("W"));
             AddAssert("user text consumed event", () => textBox.UserConsumedTextQueue.Dequeue() == "W" && textBox.UserConsumedTextQueue.Count == 0);
         }
 
@@ -69,7 +59,7 @@ namespace osu.Framework.Tests.Visual.UserInterface
         {
             AddStep("press key to insert text", () =>
             {
-                textInput.Text("W");
+                InputManager.TextInput.Text("W");
                 InputManager.Key(Key.W);
             });
             AddAssert("KeyDown event consumed", () => textBox.KeyDownQueue.Dequeue() && textBox.KeyDownQueue.Count == 0);
@@ -81,7 +71,7 @@ namespace osu.Framework.Tests.Visual.UserInterface
         {
             AddStep("press and hold key to insert text", () =>
             {
-                textInput.Text("W");
+                InputManager.TextInput.Text("W");
                 InputManager.PressKey(Key.W);
             });
             AddAssert("KeyDown event consumed", () => textBox.KeyDownQueue.Dequeue() && textBox.KeyDownQueue.Count == 0);
@@ -89,7 +79,7 @@ namespace osu.Framework.Tests.Visual.UserInterface
 
             for (int i = 0; i < 3; i++)
             {
-                AddStep("text input from repeat", () => textInput.Text("W"));
+                AddStep("text input from repeat", () => InputManager.TextInput.Text("W"));
                 AddAssert("user text consumed event", () => textBox.UserConsumedTextQueue.Dequeue() == "W" && textBox.UserConsumedTextQueue.Count == 0);
             }
 
@@ -103,7 +93,7 @@ namespace osu.Framework.Tests.Visual.UserInterface
         {
             AddStep("press and hold first key to insert text", () =>
             {
-                textInput.Text("F");
+                InputManager.TextInput.Text("F");
                 InputManager.PressKey(Key.F);
             });
             AddAssert("KeyDown event consumed", () => textBox.KeyDownQueue.Dequeue() && textBox.KeyDownQueue.Count == 0);
@@ -111,7 +101,7 @@ namespace osu.Framework.Tests.Visual.UserInterface
 
             AddStep("press second key to insert text", () =>
             {
-                textInput.Text("S");
+                InputManager.TextInput.Text("S");
                 InputManager.Key(Key.S);
             });
             AddAssert("KeyDown event consumed", () => textBox.KeyDownQueue.Dequeue() && textBox.KeyDownQueue.Count == 0);
@@ -131,7 +121,7 @@ namespace osu.Framework.Tests.Visual.UserInterface
         {
             AddStep("press and hold key to insert text", () =>
             {
-                textInput.Text("W");
+                InputManager.TextInput.Text("W");
                 InputManager.PressKey(Key.W);
             });
             AddAssert("KeyDown event consumed", () => textBox.KeyDownQueue.Dequeue() && textBox.KeyDownQueue.Count == 0);
@@ -151,7 +141,7 @@ namespace osu.Framework.Tests.Visual.UserInterface
         {
             AddStep("press and hold key to insert text", () =>
             {
-                textInput.Text("W");
+                InputManager.TextInput.Text("W");
                 InputManager.PressKey(Key.W);
             });
             AddAssert("KeyDown event consumed", () => textBox.KeyDownQueue.Dequeue() && textBox.KeyDownQueue.Count == 0);
@@ -177,7 +167,7 @@ namespace osu.Framework.Tests.Visual.UserInterface
 
             AddStep("press key to insert text", () =>
             {
-                textInput.Text("W");
+                InputManager.TextInput.Text("W");
                 InputManager.Key(Key.W);
             });
             AddAssert("KeyDown event consumed", () => textBox.KeyDownQueue.Dequeue() && textBox.KeyDownQueue.Count == 0);
@@ -189,7 +179,7 @@ namespace osu.Framework.Tests.Visual.UserInterface
         {
             AddStep("press and hold first key to insert text", () =>
             {
-                textInput.Text("F");
+                InputManager.TextInput.Text("F");
                 InputManager.PressKey(Key.F);
             });
             AddAssert("KeyDown event consumed", () => textBox.KeyDownQueue.Dequeue() && textBox.KeyDownQueue.Count == 0);
@@ -198,7 +188,7 @@ namespace osu.Framework.Tests.Visual.UserInterface
             AddStep("release first key, press second key, and send text", () =>
             {
                 InputManager.ReleaseKey(Key.F);
-                textInput.Text("S");
+                InputManager.TextInput.Text("S");
                 InputManager.PressKey(Key.S);
             });
             AddAssert("KeyDown event consumed", () => textBox.KeyDownQueue.Dequeue() && textBox.KeyDownQueue.Count == 0);
