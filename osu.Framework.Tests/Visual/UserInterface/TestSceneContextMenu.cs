@@ -265,6 +265,25 @@ namespace osu.Framework.Tests.Visual.UserInterface
             AddAssert("menu has correct size", () => contextMenuContainer.CurrentMenu.DrawSize.Y > 10);
         }
 
+        [Test]
+        public void TestBoxInScrollContainer()
+        {
+            addBoxInScrollContainerStep(_ => { });
+            AddStep("right-click scroll container", () =>
+            {
+                InputManager.MoveMouseTo(this.ChildrenOfType<BasicScrollContainer>().First());
+                InputManager.Click(MouseButton.Right);
+            });
+
+            assertMenuState(true);
+
+            AddStep("scroll down by 2", () =>
+            {
+                InputManager.MoveMouseTo(this.ChildrenOfType<BasicScrollContainer>().First(), new Vector2(-1));
+                InputManager.ScrollVerticalBy(-2);
+            });
+        }
+
         private void clickBoxStep(Func<Drawable> getBoxFunc)
         {
             AddStep("right-click box", () =>
@@ -297,6 +316,28 @@ namespace osu.Framework.Tests.Visual.UserInterface
                 };
 
                 Add(box);
+                boxFunc?.Invoke(box);
+            });
+        }
+
+        private void addBoxInScrollContainerStep(Action<Drawable> boxFunc)
+        {
+            AddStep("add box", () =>
+            {
+                var box = new BoxWithContextMenu(Enumerable.Repeat(() => { }, 1).ToArray())
+                {
+                    Anchor = Anchor.Centre,
+                    Origin = Anchor.Centre,
+                    Size = new Vector2(300),
+                };
+
+                Add(new BasicScrollContainer
+                {
+                    Anchor = Anchor.Centre,
+                    Origin = Anchor.Centre,
+                    Size = new Vector2(200, 150),
+                    Child = box,
+                });
                 boxFunc?.Invoke(box);
             });
         }
