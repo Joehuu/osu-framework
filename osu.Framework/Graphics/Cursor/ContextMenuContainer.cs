@@ -39,12 +39,15 @@ namespace osu.Framework.Graphics.Cursor
         /// </summary>
         protected ContextMenuContainer()
         {
-            AddInternal(content = new Container
+            AddRangeInternal(new Drawable[]
             {
-                RelativeSizeAxes = Axes.Both,
+                content = new Container
+                {
+                    RelativeSizeAxes = Axes.Both,
+                },
+                new InputInterceptor(this),
+                menu = CreateMenu(),
             });
-
-            AddInternal(menu = CreateMenu());
         }
 
         protected override void OnSizingChanged()
@@ -60,7 +63,7 @@ namespace osu.Framework.Graphics.Cursor
             content.AutoSizeAxes = AutoSizeAxes;
         }
 
-        protected override bool OnMouseDown(MouseDownEvent e)
+        private bool triggerMouseDownAction(MouseDownEvent e)
         {
             switch (e.Button)
             {
@@ -126,6 +129,27 @@ namespace osu.Framework.Graphics.Cursor
                 pos.Y += Math.Clamp(-pos.Y, 0, menu.DrawHeight);
 
             menu.Position = pos;
+        }
+
+        /// <summary>
+        /// An invisible drawable that forwards input to <see cref="ContextMenuContainer"/>.
+        /// Needed to bypass any <see cref="OnMouseDown"/> blocks from <see cref="content"/> (e.g. <see cref="OverlayContainer"/>).
+        /// </summary>
+        private partial class InputInterceptor : Drawable
+        {
+            private readonly ContextMenuContainer contextMenuContainer;
+
+            public InputInterceptor(ContextMenuContainer contextMenuContainer)
+            {
+                this.contextMenuContainer = contextMenuContainer;
+
+                RelativeSizeAxes = Axes.Both;
+            }
+
+            protected override bool OnMouseDown(MouseDownEvent e)
+            {
+                return contextMenuContainer.triggerMouseDownAction(e);
+            }
         }
     }
 }
