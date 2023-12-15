@@ -1,8 +1,6 @@
 ﻿// Copyright (c) ppy Pty Ltd <contact@ppy.sh>. Licensed under the MIT Licence.
 // See the LICENCE file in the repository root for full licence text.
 
-#nullable disable
-
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -24,7 +22,7 @@ namespace osu.Framework.Graphics.Cursor
     {
         private readonly Menu menu;
 
-        private IHasContextMenu menuTarget;
+        private IHasContextMenu? menuTarget;
         private Vector2 targetRelativePosition;
 
         /// <summary>
@@ -53,16 +51,13 @@ namespace osu.Framework.Graphics.Cursor
         {
             base.OnSizingChanged();
 
-            if (content != null)
-            {
-                // reset to none to prevent exceptions
-                content.RelativeSizeAxes = Axes.None;
-                content.AutoSizeAxes = Axes.None;
+            // reset to none to prevent exceptions
+            content.RelativeSizeAxes = Axes.None;
+            content.AutoSizeAxes = Axes.None;
 
-                // in addition to using this.RelativeSizeAxes, sets RelativeSizeAxes on every axis that is neither relative size nor auto size
-                content.RelativeSizeAxes = Axes.Both & ~AutoSizeAxes;
-                content.AutoSizeAxes = AutoSizeAxes;
-            }
+            // in addition to using this.RelativeSizeAxes, sets RelativeSizeAxes on every axis that is neither relative size nor auto size
+            content.RelativeSizeAxes = Axes.Both & ~AutoSizeAxes;
+            content.AutoSizeAxes = AutoSizeAxes;
         }
 
         protected override bool OnMouseDown(MouseDownEvent e)
@@ -76,7 +71,7 @@ namespace osu.Framework.Graphics.Cursor
 
                     menuTarget = target;
 
-                    if (menuTarget == null || items.Length == 0)
+                    if (menuTarget == null || items?.Length == 0)
                     {
                         if (menu.State == MenuState.Open)
                             menu.Close();
