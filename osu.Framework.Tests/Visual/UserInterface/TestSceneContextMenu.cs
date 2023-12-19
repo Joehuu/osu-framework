@@ -12,6 +12,7 @@ using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.Cursor;
 using osu.Framework.Graphics.Shapes;
 using osu.Framework.Graphics.UserInterface;
+using osu.Framework.Input;
 using osu.Framework.Utils;
 using osu.Framework.Testing;
 using osuTK;
@@ -266,22 +267,59 @@ namespace osu.Framework.Tests.Visual.UserInterface
         }
 
         [Test]
-        public void TestBoxInScrollContainer()
+        public void TestBoxInScrollContainerInput()
         {
             addBoxInScrollContainerStep(_ => { });
-            AddStep("right-click scroll container", () =>
-            {
-                InputManager.MoveMouseTo(this.ChildrenOfType<BasicScrollContainer>().First());
-                InputManager.Click(MouseButton.Right);
-            });
 
+            rightClickScrollContainer();
             assertMenuState(true);
-
             AddStep("scroll down by 2", () =>
             {
                 InputManager.MoveMouseTo(this.ChildrenOfType<BasicScrollContainer>().First(), new Vector2(-1));
                 InputManager.ScrollVerticalBy(-2);
             });
+            assertMenuState(false);
+
+            rightClickScrollContainer();
+            AddStep("press page up", () =>
+            {
+                InputManager.MoveMouseTo(this.ChildrenOfType<BasicScrollContainer>().First(), new Vector2(-1));
+                InputManager.Key(Key.PageUp);
+            });
+            assertMenuState(false);
+
+            rightClickScrollContainer();
+            AddStep("press page down", () =>
+            {
+                InputManager.MoveMouseTo(this.ChildrenOfType<BasicScrollContainer>().First(), new Vector2(-1));
+                InputManager.Key(Key.PageDown);
+            });
+            assertMenuState(false);
+
+            rightClickScrollContainer();
+            AddStep("press move backward line", () =>
+            {
+                InputManager.MoveMouseTo(this.ChildrenOfType<BasicScrollContainer>().First(), new Vector2(-1));
+                InputManager.Keys(PlatformAction.MoveBackwardLine);
+            });
+            assertMenuState(false);
+
+            rightClickScrollContainer();
+            AddStep("press move forward line", () =>
+            {
+                InputManager.MoveMouseTo(this.ChildrenOfType<BasicScrollContainer>().First(), new Vector2(-1));
+                InputManager.Keys(PlatformAction.MoveForwardLine);
+            });
+            assertMenuState(false);
+
+            void rightClickScrollContainer()
+            {
+                AddStep("right-click scroll container", () =>
+                {
+                    InputManager.MoveMouseTo(this.ChildrenOfType<BasicScrollContainer>().First());
+                    InputManager.Click(MouseButton.Right);
+                });
+            }
         }
 
         private void clickBoxStep(Func<Drawable> getBoxFunc)
