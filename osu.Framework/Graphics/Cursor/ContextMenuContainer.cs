@@ -9,6 +9,7 @@ using osuTK.Input;
 using osu.Framework.Graphics.Containers;
 using osu.Framework.Graphics.UserInterface;
 using osu.Framework.Input;
+using osu.Framework.Input.Bindings;
 using osu.Framework.Input.Events;
 
 namespace osu.Framework.Graphics.Cursor
@@ -49,6 +50,8 @@ namespace osu.Framework.Graphics.Cursor
                 menu = CreateMenu(),
             });
         }
+
+        public void CloseMenu() => menu.Close();
 
         protected override void OnSizingChanged()
         {
@@ -134,8 +137,9 @@ namespace osu.Framework.Graphics.Cursor
         /// <summary>
         /// An invisible drawable that forwards input to <see cref="ContextMenuContainer"/>.
         /// Needed to bypass any <see cref="OnMouseDown"/> blocks from <see cref="content"/> (e.g. <see cref="OverlayContainer"/>).
+        /// Also hides the context menu when <see cref="ScrollContainer{T}"/> key bindings are pressed.
         /// </summary>
-        private partial class InputInterceptor : Drawable
+        private partial class InputInterceptor : Drawable, IKeyBindingHandler<PlatformAction>
         {
             private readonly ContextMenuContainer contextMenuContainer;
 
@@ -149,6 +153,42 @@ namespace osu.Framework.Graphics.Cursor
             protected override bool OnMouseDown(MouseDownEvent e)
             {
                 return contextMenuContainer.triggerMouseDownAction(e);
+            }
+
+            protected override bool OnKeyDown(KeyDownEvent e)
+            {
+                switch (e.Key)
+                {
+                    case Key.PageUp:
+                    case Key.PageDown:
+                        contextMenuContainer.CloseMenu();
+                        break;
+                }
+
+                return false;
+            }
+
+            protected override bool OnScroll(ScrollEvent e)
+            {
+                contextMenuContainer.CloseMenu();
+                return false;
+            }
+
+            public bool OnPressed(KeyBindingPressEvent<PlatformAction> e)
+            {
+                switch (e.Action)
+                {
+                    case PlatformAction.MoveBackwardLine:
+                    case PlatformAction.MoveForwardLine:
+                        contextMenuContainer.CloseMenu();
+                        break;
+                }
+
+                return false;
+            }
+
+            public void OnReleased(KeyBindingReleaseEvent<PlatformAction> e)
+            {
             }
         }
     }
