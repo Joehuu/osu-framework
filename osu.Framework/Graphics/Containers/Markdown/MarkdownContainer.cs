@@ -261,9 +261,11 @@ namespace osu.Framework.Graphics.Containers.Markdown
                         AddMarkdownComponent(single, container, level);
                     break;
 
-                case HtmlBlock:
+                case HtmlBlock htmlBlock:
+                    if (htmlBlock.Type == HtmlBlockType.Comment)
+                        break;
                     // HTML is not supported
-                    break;
+                    goto default;
 
                 case LinkReferenceDefinitionGroup:
                     // Link reference doesn't need to be displayed.
